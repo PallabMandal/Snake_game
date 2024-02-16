@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Snake Game</title>
+    <style>
+        #game-board {
+            width: 1200px;
+            height: 600px;
+            border: 8px solid #000;
+            position: relative;
+        }
+
+        .snake {
+            width: 20px;
+            height: 20px;
+            background-color: green;
+            position: absolute;
+        }
+
+        .food {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            position: absolute;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <div id="game-board"></div>
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const gridSize = 15; // Size of each grid cell
+        const snakeSpeed = 130; // Speed of the snake (lower value = faster)
+
+        let snake = [{ x: 5, y: 5 }]; // Initial position of the snake
+        let food = { x: 10, y: 10 }; // Initial position of the food
+        let dx = 1; // Initial direction (right)
+        let dy = 0;
+        let score = 0;
+
+        function drawSnake() {
+            gameBoard.innerHTML = '';
+            snake.forEach(segment => {
+                const snakeSegment = document.createElement('div');
+                snakeSegment.className = 'snake';
+                snakeSegment.style.left = segment.x * gridSize + 'px';
+                snakeSegment.style.top = segment.y * gridSize + 'px';
+                gameBoard.appendChild(snakeSegment);
+            });
+        }
+
+        function drawFood() {
+            const foodElement = document.createElement('div');
+            foodElement.className = 'food';
+            foodElement.style.left = food.x * gridSize + 'px';
+            foodElement.style.top = food.y * gridSize + 'px';
+            gameBoard.appendChild(foodElement);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        function generateFood() {
+            const maxX = Math.floor(gameBoard.clientWidth / gridSize);
+            const maxY = Math.floor(gameBoard.clientHeight / gridSize);
+
+            food = {
+                x: Math.floor(Math.random() * maxX),
+                y: Math.floor(Math.random() * maxY),
+            };
+        }
+
+        function checkCollision() {
+            const head = snake[0];
+
+            // Check collision with wall
+            if (head.x < 0 || head.x >= gameBoard.clientWidth / gridSize ||
+                head.y < 0 || head.y >= gameBoard.clientHeight / gridSize) {
+                clearInterval(gameInterval);
+                alert('Game Over! Your score: ' + score);
+                return true;
+            }
+
+            // Check collision with itself
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    clearInterval(gameInterval);
+                    alert('Game Over! Your score: ' + score);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function changeDirection(event) {
+            switch (event.key) {
+                case 'ArrowUp':
+                    if (dy !== 1) {
+                        dx = 0;
+                        dy = -1;
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (dy !== -1) {
+                        dx = 0;
+                        dy = 1;
+                    }
+                    break;
+                case 'ArrowLeft':
+                    if (dx !== 1) {
+                        dx = -1;
+                        dy = 0;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (dx !== -1) {
+                        dx = 1;
+                        dy = 0;
+                    }
+                    break;
+            }
+        }
+
+        generateFood();
+        drawSnake();
+        drawFood();
+
+        const gameInterval = setInterval(() => {
+            moveSnake();
+            drawSnake();
+            drawFood();
+            if (checkCollision()) {
+                clearInterval(gameInterval);
+            }
+        }, snakeSpeed);
+
+        document.addEventListener('keydown', changeDirection);
+    </script>
+</body>
+</html>
